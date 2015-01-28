@@ -4,6 +4,7 @@ public class Percolation {
 
     private boolean[] grid;
     private WeightedQuickUnionUF weightedQuickUnionUF;
+    private WeightedQuickUnionUF backwashWeightedQuickUnionUF;
     private int N;
 
     public Percolation(int N) {
@@ -11,7 +12,8 @@ public class Percolation {
 
         this.N = N;
         this.VIRTUAL_BOTTOM = N * N + 1;
-        this.weightedQuickUnionUF = new WeightedQuickUnionUF((VIRTUAL_BOTTOM + 1));
+        this.weightedQuickUnionUF = new WeightedQuickUnionUF(VIRTUAL_BOTTOM + 1);
+        this.backwashWeightedQuickUnionUF = new WeightedQuickUnionUF(VIRTUAL_BOTTOM);
         this.grid = new boolean[N * N];
     }
 
@@ -26,11 +28,13 @@ public class Percolation {
         if (i == 1) {
             // if p is in the top row, connect it to VIRTUAL_TOP
             weightedQuickUnionUF.union(p, VIRTUAL_TOP);
+            backwashWeightedQuickUnionUF.union(p, VIRTUAL_TOP);
         } else {
             int k = i - 1;
             if (isOpen(k, j)) {
                 int q = pointFromCoordinates(k, j);
                 weightedQuickUnionUF.union(p, q);
+                backwashWeightedQuickUnionUF.union(p, q);
             }
         }
 
@@ -41,6 +45,7 @@ public class Percolation {
             if (isOpen(i, k)) {
                 int q = pointFromCoordinates(i, k);
                 weightedQuickUnionUF.union(p, q);
+                backwashWeightedQuickUnionUF.union(p, q);
             }
         }
 
@@ -53,6 +58,7 @@ public class Percolation {
             if (isOpen(k, j)) {
                 int q = pointFromCoordinates(k, j);
                 weightedQuickUnionUF.union(p, q);
+                backwashWeightedQuickUnionUF.union(p, q);
             }
         }
 
@@ -63,6 +69,7 @@ public class Percolation {
             if (isOpen(i, k)) {
                 int q = pointFromCoordinates(i, k);
                 weightedQuickUnionUF.union(p, q);
+                backwashWeightedQuickUnionUF.union(p, q);
             }
         }
     }
@@ -82,15 +89,13 @@ public class Percolation {
     public boolean isFull(int i, int j) {
         checkInBounds(i, j);
 
-        if (!isOpen(i, j))
+        if (!isOpen(i, j)) {
             return false;
-
-//        for (int k = 1; k < N; k++) {
-//
-//        }
+        }
 
         int p = pointFromCoordinates(i, j);
-        return weightedQuickUnionUF.connected(p, VIRTUAL_TOP);
+
+        return backwashWeightedQuickUnionUF.connected(p, VIRTUAL_TOP);
     }
 
     public boolean percolates() {
